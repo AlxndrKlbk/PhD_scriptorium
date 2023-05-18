@@ -1,0 +1,6 @@
+
+Алгоритмы бинарной классификации
+https://biconsult.ru/products/algoritmy-binarnoy-klassifikacii-v-mashinnom-obuchenii
+
+catboost binary classification
+DATnet (original article in sources): https://habr.com/ru/articles/653683/
