@@ -1,0 +1,394 @@
+\documentclass[12pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[russian,english]{babel}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\geometry{a4paper,margin=2cm}
+
+\newcommand{\sumphases}{\sum_{\alpha \in \{g,w,h\}}}
+
+\begin{document}
+
+\selectlanguage{russian}
+
+\section*{Физико-математическая модель фильтрации с учетом образования газовых гидратов}
+
+\subsection*{Насыщения и пористость}
+
+\begin{equation}
+  S_g + S_w + S_h = 1,
+  \qquad 0 \le S_\alpha \le 1,
+\end{equation}
+где \(S_g, S_w, S_h\)~- насыщения газа, воды и гидрата соответственно.
+
+Пористость \(\phi\) считаем зависящей от образования гидрата:
+\begin{equation}\label{eq:phi_Sh}
+  \phi(t,\mathbf{x}) = \phi_0(\mathbf{x})\,
+  \bigl(1 - \beta_h S_h(t,\mathbf{x})\bigr),
+\end{equation}
+где \(\phi_0(\mathbf{x})\)~- начальная пористость коллекторной породы,
+\(\beta_h \in [0,1]\)~- коэффициент, характеризующий,
+какую долю порового объёма блокирует единица насыщения гидратом.
+
+\subsection*{Абсолютная проницаемость как функция пористости}
+
+Абсолютная проницаемость коллектора, связанная с геометрией пор,
+описывается как функция пористости. Для простоты используем
+степенную аппроксимацию типа Козени-Кармена:
+\begin{equation}\label{eq:kabs_phi}
+  k_{\mathrm{abs}}(\phi)
+  = k_0\left(\frac{\phi}{\phi_0}\right)^{m},
+\end{equation}
+где \(k_0\)~- начальная абсолютная проницаемость при \(\phi = \phi_0\),
+\(m \ge 1\)~- эмпирический показатель.
+
+Подставляя \eqref{eq:phi_Sh} в \eqref{eq:kabs_phi}, получаем
+явную зависимость абсолютной проницаемости от насыщения гидратом:
+\begin{equation}\label{eq:kabs_Sh}
+  k_{\mathrm{abs}}(S_h)
+  = k_0\bigl(1 - \beta_h S_h\bigr)^{m}.
+\end{equation}
+
+Здесь \(k_{\mathrm{abs}}\) описывает \emph{только} изменение проводимости
+скелета пористой среды из-за уменьшения эффективного порового объёма
+при образовании твёрдого гидрата.
+
+\subsection*{Закон сохранение массы (неразрывность)}
+
+Запишем уравнение неразрывности для каждой моделируемой фазы (газ, вода, газовый гидрат).
+При этом учтем, что в рамках рассматриваемой задачи обратный переход не рассматривается (моделирование до остановки). тогда получим, что:
+
+\begin{subequations}\label{eq:mass-balance}
+\begin{align}
+  \frac{\partial}{\partial t}\bigl(\phi S_g \rho_g\bigr)
+  + \nabla\cdot\bigl(\rho_g \mathbf{u}_g\bigr)
+  &= - \nu_g R_h,
+  \label{eq:mass-g}\\[0.3em]
+  \frac{\partial}{\partial t}\bigl(\phi S_w \rho_w\bigr)
+  + \nabla\cdot\bigl(\rho_w \mathbf{u}_w\bigr)
+  &= - \nu_w R_h,
+  \label{eq:mass-w}\\[0.3em]
+  \frac{\partial}{\partial t}\bigl(\phi S_h \rho_h\bigr)
+  &= + \nu_h R_h.
+  \label{eq:mass-h}
+\end{align}
+\end{subequations}
+
+Где \(\rho_\alpha = \rho_\alpha(p_\alpha,T)\)~- плотности фаз,
+\(\mathbf{u}_\alpha\)~- фильтрационные скорости,
+\(R_h\)~- скорость образования гидрата (масса на единицу объёма и времени),
+\(\nu_g,\nu_w,\nu_h\)~- стехиометрические коэффициенты переноса массы.
+
+\subsection*{Закон Дарси}
+
+\subsubsection*{1. закон Дарси для однофазной фильтрации}
+
+Для \emph{одной} подвижной фазы классический закон Дарси имеет следующий вид:
+\begin{equation}\label{eq:darcy-abs}
+  \mathbf{u}_\alpha
+  = -\frac{k_{\mathrm{abs}}(\phi)}{\mu_\alpha}
+    \Bigl(\nabla p_\alpha - \rho_\alpha \mathbf{g}\Bigr),
+\end{equation}
+где
+\begin{itemize}
+  \item \(k_{\mathrm{abs}}(\phi)\)~- абсолютная проницаемость,
+        описывающая только свойства скелета порового пространства, зависит от свободной пористости;
+  \item \(\mu_\alpha\)~- динамическая вязкость фазы \(\alpha\);
+  \item \(p_\alpha\)~- давление фазы \(\alpha\);
+  \item \(\mathbf{g}\)~- вектор ускорения силы тяжести.
+\end{itemize}
+
+Чтобы учитывать образование гидрата, представим \(k_{\mathrm{abs}}(\phi)\)  как функцию от насыщения 
+\(k_{\mathrm{abs}}(S_h)\) из \eqref{eq:kabs_Sh}, таким образов учитываем что
+поровое пространство становится менее проводящим по мере роста \(S_h\).
+
+\subsubsection*{2. закон Дарси для многофазной фильтрации}
+
+Для фильтрации в многофазном случае (газ + вода) необходимо учитывать \emph{относительные} фазовые
+проницаемости \(k_{r\alpha}\), которые описывают дополнительное гидродинамического сопротивления фаз за счет конкуренции за один и тот же поровый объём, в котором происходит движение флюида.
+
+Определим \emph{эффективную фазовую проницаемость} для фазы \(\alpha\):
+\begin{equation}\label{eq:keff-def}
+  k_{\mathrm{eff},\alpha}(S_g,S_w,S_h)
+  := k_{\mathrm{abs}}(S_h)\,k_{r\alpha}(S_g,S_w,S_h),
+\end{equation}
+и \emph{по определению} относительную проницаемость как
+\begin{equation}\label{eq:kr-def}
+  k_{r\alpha}(S_g,S_w,S_h)
+  = \frac{k_{\mathrm{eff},\alpha}}{k_{\mathrm{abs}}(S_h)}.
+\end{equation}
+
+То есть:
+\begin{itemize}
+  \item \(k_{\mathrm{abs}}(S_h)\)~- будем использовать абсолютную фазовую проницаемость определенную как \eqref{eq:kabs_Sh};
+  \item \(k_{r\alpha}\)~- относительная фазовая проницаемость;
+  \item \(k_{\mathrm{eff},\alpha}\)~- эффективная фазовая проницаемость\(\alpha\)
+        в законе Дарси.
+\end{itemize}
+
+В \eqref{eq:keff-def} произведение \(k_{\mathrm{abs}} \cdot k_{r\alpha}\) есть эффективная фазовая проницаемость.
+Тогда закон Дарси для каждой подвижной фазы \(\alpha \in \{g,w\}\)
+\emph{только} через эффективную фазовую проницаемость с учетом образования гидрата запишется как:
+\begin{equation}\label{eq:darcy-keff}
+  \mathbf{u}_\alpha
+  = -\frac{k_{\mathrm{eff},\alpha}(S_g,S_w,S_h)}{\mu_\alpha}
+    \Bigl(\nabla p_\alpha - \rho_\alpha \mathbf{g}\Bigr),
+  \qquad \alpha \in \{g,w\}.
+\end{equation}
+
+Где связь с абсолютной проницаемостью и насыщениями задаётся
+через \eqref{eq:kabs_Sh} и \eqref{eq:keff-def}:
+\[
+  k_{\mathrm{eff},\alpha}(S_g,S_w,S_h)
+  = k_0\bigl(1 - \beta_h S_h\bigr)^m
+    \,k_{r\alpha}(S_g,S_w,S_h).
+\]
+
+\section*{Фазовый переход газа и вода $\rightarrow$ газовый гидрат}
+
+В этом разделе будет показано, как фазовый переход учитываетс в законах сохранения массы и энергии.
+
+\subsection*{Локальное уравнение баланса массы для фазы}
+
+Рассмотрим произвольную фазу \(\alpha \in \{g,w,h\}\) (газ, вода, гидрат).
+Запишем локальное уравнение баланса массы для этой фазы в пористом среде:
+\begin{equation}\label{eq:local-mass-alpha}
+  \frac{\partial}{\partial t}\bigl(\phi S_\alpha \rho_\alpha\bigr)
+  + \nabla\cdot\bigl(\rho_\alpha \mathbf{u}_\alpha\bigr)
+  = \Gamma_\alpha,
+\end{equation}
+где
+\begin{itemize}
+  \item \(\phi\)~--- пористость;
+  \item \(S_\alpha\)~--- насыщение фазы \(\alpha\) (доля порового объёма);
+  \item \(\rho_\alpha\)~--- плотность фазы \(\alpha\);
+  \item \(\mathbf{u}_\alpha\)~--- фильтрационная скорость фазы \(\alpha\)
+        (скорость Дарси);
+  \item \(\Gamma_\alpha\)~--- источник (если \(>0\)) или сток (если \(<0\)) массы фазы
+        за счёт фазового перехода.
+\end{itemize}
+
+\subsection*{Определение скорости фазового перехода $R_h$}
+
+Введём скалярную величину \(R_h(t,\mathbf{x})\):
+\begin{itemize}
+  \item \(R_h\)~--- скорость образования гидрата \emph{в пересчёте на массу гидрата} на единицу порового объема и времени.
+\end{itemize}
+
+Тогда:
+\begin{equation}
+  \Gamma_h = \nu_h R_h,
+\end{equation}
+то есть правая часть уравнения для гидратной фазы может быть записана как
+\begin{equation}\label{eq:mass-h-derivation}
+  \frac{\partial}{\partial t}\bigl(\phi S_h \rho_h\bigr)
+  = \Gamma_h
+  = \nu_h R_h.
+\end{equation}
+
+Для газа и воды \(R_h\) даёт \emph{отрицательные} источники (стоки):
+\begin{equation}
+  \Gamma_g = - \nu_g R_h,
+  \qquad
+  \Gamma_w = - \nu_w R_h,
+\end{equation}
+то есть
+\begin{subequations}\label{eq:mass-gw-derivation}
+\begin{align}
+  \frac{\partial}{\partial t}\bigl(\phi S_g \rho_g\bigr)
+  + \nabla\cdot\bigl(\rho_g \mathbf{u}_g\bigr)
+  &= - \nu_g R_h,\\[0.3em]
+  \frac{\partial}{\partial t}\bigl(\phi S_w \rho_w\bigr)
+  + \nabla\cdot\bigl(\rho_w \mathbf{u}_w\bigr)
+  &= - \nu_w R_h.
+\end{align}
+\end{subequations}
+
+Коэффициенты \(\nu_g\), \(\nu_w\), \(\nu_h\) здесь:
+\begin{itemize}
+  \item могут быть выражены через стехиометрию реакции и молярные массы,
+  \item можно представить как эмпирические \emph{эффективные коэффициенты}, которые учитывают, сколько массы газа и воды уходит на единицу массы образующегося гидрата.
+\end{itemize}
+
+За счет \eqref{eq:mass-h-derivation} и \eqref{eq:mass-gw-derivation}
+фазовый переход можно \emph{явно} учесть в уравнениях неразрывности:
+масса газа и воды убывает, масса гидрата возрастает.
+
+\subsection*{Связь скорости фазового перехода $R_h$ с насыщением гидратом $S_h$}
+
+Если предположить, что плотность гидрата \(\rho_h\) и пористость \(\phi\)
+меняются медленно (или считаем их константами на первом приближении),
+из \eqref{eq:mass-h-derivation} получаем:
+\begin{equation}\label{eq:Sh-from-Rh}
+  \rho_h \phi \,\frac{\partial S_h}{\partial t}
+  = \nu_h R_h
+  \quad\Longrightarrow\quad
+  \frac{\partial S_h}{\partial t}
+  = \frac{\nu_h}{\rho_h \phi} R_h.
+\end{equation}
+
+Таким образом, используя функцию скорости образования гидрата \(R_h\)
+(кинетику образования гидрата), можно определять насыщение порового пространства газовым гидратом \(S_h(t,\mathbf{x})\).
+
+\subsection*{Закон сохранения энергии}
+
+Учитывая что рассматриваемые процесс образования гидратов в аномальных пластах зависит не только от давления но и температуры, необходимо так же учитывать закон сохранения энергии. 
+
+\begin{equation}\label{eq:energy}
+\begin{aligned}
+  \frac{\partial}{\partial t}
+  \Bigl[
+    (1-\phi)\,\rho_r c_r T
+    + \phi \sumphases S_\alpha \rho_\alpha c_\alpha T
+  \Bigr]
+  &+
+  \nabla\cdot\Bigl(
+    -\lambda_{\mathrm{eff}}\nabla T
+    + \sum_{\alpha\in\{g,w\}} \rho_\alpha h_\alpha \mathbf{u}_\alpha
+  \Bigr)
+  = - L_h R_h .
+\end{aligned}
+\end{equation}
+
+Здесь \(\rho_r, c_r\)~- плотность и теплоёмкость матрицы,
+\(c_\alpha\)~- теплоёмкости фаз,
+\(\lambda_{\mathrm{eff}}\)~- эффективная теплопроводность пористой среды,
+\(h_\alpha\)~- удельные энтальпии фаз,
+\(L_h\)~- удельная скрытая теплота образования гидрата.
+
+\(\displaystyle
+\phi \sum_{\alpha\in\{g,w,h\}} S_\alpha \rho_\alpha c_\alpha T
+\)
+— внутренняя энергия фаз в порах.  
+В каждой фазе присутствует теплоёмкость \(c_\alpha\),
+плотность \(\rho_\alpha\) и температура \(T\).
+
+\[
+\nabla\cdot
+\Bigl(
+\sum_{\alpha\in\{g,w\}} \rho_\alpha h_\alpha \mathbf{u}_\alpha
+\Bigr)
+\] — конвективный перенос тепла движущимися фазами, где :
+\begin{itemize}
+  \item \(\rho_\alpha \mathbf{u}_\alpha\) — массовый поток фазы,
+  \item \(h_\alpha\) — удельная энтальпия фазы,
+\end{itemize}
+
+
+\subsection*{Кинетика образования гидрата}
+В соответствии с моделью И.Ленгмюра, образование газового гидрата ограничено предельной равновесной концентрацией, определяемой как функция от давления и температуры, а именно:  
+\begin{subequations}\label{eq:hydrate-kinetics}
+\begin{align}
+  S_h^{\mathrm{eq}}(p_g,T)
+  &= S_{h,\max}\,
+     \frac{p_g}{p_g + P_L(T)},
+  \label{eq:Sh-eq-langmuir}\\[0.4em]
+  R_h
+  &= \rho_h\,k_L \Bigl(S_h^{\mathrm{eq}}(p_g,T) - S_h\Bigr),
+  \label{eq:Rh-langmuir}
+\end{align}
+\end{subequations}
+
+где \(S_{h,\max}\)~- максимальное гидратное насыщение,
+\(P_L(T)\)~- параметр Ленгмюра (характерное давление насыщения),
+\(k_L\)~- кинетический коэффициент.
+
+Из баланса массы гидрата \eqref{eq:mass-h} при медленном изменении \(\rho_h\)
+получаем:
+\begin{equation}\label{eq:Sh-evol}
+  \rho_h \phi \frac{\partial S_h}{\partial t} = \nu_h R_h
+  \quad\Longrightarrow\quad
+  \frac{\partial S_h}{\partial t}
+  = \frac{\nu_h}{\rho_h \phi} R_h.
+\end{equation}
+
+Подставляя \eqref{eq:Rh-langmuir}, имеем:
+\begin{equation}\label{eq:Sh-evol-langmuir}
+  \frac{\partial S_h}{\partial t}
+  = \frac{\nu_h k_L}{\phi}
+    \Bigl(S_h^{\mathrm{eq}}(p_g,T) - S_h\Bigr).
+\end{equation}
+
+Решив уравнение \eqref{eq:Sh-evol-langmuir} относительно насыщения гидратом и подставив его в \eqref{eq:phi_Sh} и \eqref{eq:kabs_phi}, можно написать:
+\begin{equation}\label{eq:kabs-static}
+  k_{\mathrm{abs}}(S_h)
+  = k_0 \left(1 - \beta_h S_h\right)^{m}.
+\end{equation}
+
+Получив квазистационарное уравнение, учитывающее влияние роста гидратного насыщения на абсолютную проницаемость.
+
+\subsection*{Дополнительная динамика кольматации (уравнение Леонтьева)}
+
+Чтобы учесть перенос и накопление частиц гидрата (суффозия, кольматация) на проницаемость призабойной зоны скважины, введём
+безразмерный множитель кольматации \(F_{\mathrm{colm}}(t,\mathbf{x})\) 
+и определим эффективную фазовую проницаемость как
+\begin{equation}\label{eq:keff-full}
+  k_{\mathrm{eff},\alpha}(S_g,S_w,S_h,t)
+  = k_{\mathrm{abs}}(S_h)\,
+    F_{\mathrm{colm}}(t,\mathbf{x})\,
+    k_{r\alpha}(S_g,S_w,S_h).
+\end{equation}
+
+Для \(F_{\mathrm{colm}}\) запишем уравнение Леонтьева:
+\begin{subequations}\label{eq:leontiev}
+\begin{align}
+  \frac{\partial F_{\mathrm{colm}}}{\partial t}
+  &= - \alpha \, \bigl|\mathbf{u}_\mathrm{f}\bigr|\,
+      S_h\, F_{\mathrm{colm}},
+      \label{eq:leontiev-F}\\[0.4em]
+  \mathbf{u}_\mathrm{f}
+  &= \omega_g \mathbf{u}_g + \omega_w \mathbf{u}_w,
+\end{align}
+\end{subequations}
+где \(\alpha\)~- коэффициент кольматации,
+\(\mathbf{u}_\mathrm{f}\)~- характерная скорость фильтрации смеси,
+\(\omega_g,\omega_w\)~- весовые коэффициенты (вклад газа и воды).
+
+Решение \eqref{eq:leontiev-F} при известном \(S_h\) и \(\mathbf{u}_\mathrm{f}\):
+\begin{equation}\label{eq:leontiev-sol}
+  F_{\mathrm{colm}}(t,\mathbf{x})
+  = \exp\Bigl(
+      -\alpha \int_0^t
+        \bigl|\mathbf{u}_\mathrm{f}(\tau,\mathbf{x})\bigr|\,
+        S_h(\tau,\mathbf{x})\, d\tau
+    \Bigr),
+\end{equation}
+если \(F_{\mathrm{colm}}(0,\mathbf{x}) = 1\).
+
+Тогда \(k_{\mathrm{eff},\alpha}\) из \eqref{eq:keff-full}
+учитывает три эффекта:
+\begin{itemize}
+  \item изменение свободной пористой из-за гидрата (\(k_{\mathrm{abs}}(S_h)\));
+  \item многофазность (\(k_{r\alpha}\));
+  \item динамическую кольматацию \(F_{\mathrm{colm}}\) каналов.
+\end{itemize}
+
+\subsection*{Возможности предлагаемой физико-математической модели}
+
+Таким образом, предлагаемая модель включает в себя:
+\begin{itemize}
+  \item массовые балансы фаз \eqref{eq:mass-balance};
+  \item закон Дарси в виде \eqref{eq:darcy-keff} с
+        эффективной фазовой проницаемостью \eqref{eq:keff-full};
+  \item связь пористости с гидратным насыщением \eqref{eq:phi_Sh}, как следствие динамическое изменение проницаемости коллектора ;
+  \item зависимость абсолютной проницаемости от пористости, насыщения газовым гидратом;
+  \item кинетику образования гидрата по Ленгмюру \eqref{eq:hydrate-kinetics},
+        эволюцию \(S_h\) \eqref{eq:Sh-evol-langmuir};
+  \item баланс энергии \eqref{eq:energy} с источником-стоком
+        скрытой теплоты фазового перехода \(-L_h R_h\);
+  \item дополнительную динамику кольматации по Леонтьеву
+        через \(F_{\mathrm{colm}}\) \eqref{eq:leontiev}, \eqref{eq:leontiev-sol}.
+\end{itemize}
+
+Данная модель позволит:
+\begin{itemize}
+  \item \emph{учитывать зависимость абсолютной} проницаемости \(k_{\mathrm{abs}}\) от насыщением порового пространства газовым гидратом;
+  \item \emph{учитывать изменение относительные фазовой} проницаемости \(k_{r\alpha}\);
+  \item Определяемые в соответствии с моделью \(k_{\mathrm{abs}}, F_{\mathrm{colm}}, k_{r\alpha}\) должны позволить определять динамику работы скважины в условиях аномально низких пластовых давлений и температур, прогнозировать вынужденные остановки для ГТМ, подбирать оптимальные режимы работы.
+\end{itemize}
+
+\end{document}
